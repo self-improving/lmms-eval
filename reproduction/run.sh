@@ -1,0 +1,93 @@
+#!/bin/bash
+
+#SBATCH --job-name=lmms-vllm-experiments # job name
+#SBATCH --array=1-36 #job array
+#SBATCH --partition=m3-1536 #partition
+#SBATCH --mem=500G #2321978M #2.3TB memory
+#SBATCH --cpus-per-task=32 # Number of CPU cores to allocate per task
+#SBATCH --gres=gpu:2 # Number of GPUs to allocate per task (exclusive access)
+#SBATCH --time=1-00:00:00 # 1 days
+#SBATCH --output=log/output-%A_%a.log # path of output log files
+#SBATCH --error=log/error-%A_%a.log # path of error log files
+
+
+set -euo pipefail
+
+source /etc/profile.d/modules.sh
+module load singularity
+
+# Environment
+venv_name=lmms-vllm-experiments
+group=/lustre/share/self_improving/self_improving
+# singularity image
+sif_path=/lustre/share/self_improving/self_improving/singularity/rocm_amd_image_vllm-taro.sif
+
+lmms_eval_repo_dir=~/repo/lmms-eval
+
+# Define associative arrays
+# models
+declare -A models
+models[1]=/group_path/models/gemma3/gemma-3-4b-it
+models[2]=/group_path/models/gemma3/gemma-3-12b-it
+models[3]=/group_path/models/gemma3/gemma-3-27b-it
+models[4]=/group_path/models/Qwen/Qwen2.5-VL-7B-Instruct
+models[5]=/group_path/models/Qwen/Qwen2.5-VL-32B-Instruct
+models[6]=/group_path/models/Qwen/Qwen2.5-VL-72B-Instruct
+
+# datasets
+# infovqa_val,docvqa_val,mathvision_test,mmmu_pro,scienceqa_full,muirbench
+declare -A datasets
+datasets[1]=infovqa_val
+datasets[2]=docvqa_val
+datasets[3]=mathvision_test
+datasets[4]=mmmu_pro
+datasets[5]=scienceqa_full
+datasets[6]=muirbench
+
+# Calculate indices based on SLURM_ARRAY_TASK_ID
+model_index=$(( (SLURM_ARRAY_TASK_ID - 1) / 6 + 1 ))
+dataset_index=$(( ((SLURM_ARRAY_TASK_ID - 1) % 6) + 1 ))
+
+# Get the values from the arrays
+model="${models[$model_index]}"
+dataset="${datasets[$dataset_index]}"
+
+# Check if values are empty (for safety)
+if [[ -z "$model" || -z "$dataset" ]]; then
+  echo "Error: Invalid index. SLURM_ARRAY_TASK_ID=$SLURM_ARRAY_TASK_ID" >&2
+  exit 1
+fi
+
+echo "rocm-smi"
+rocm-smi
+
+# Print the configuration for this task
+echo "SLURM_ARRAY_TASK_ID: $SLURM_ARRAY_TASK_ID"
+echo "model_index: $model_index"
+echo "dataset_index: $dataset_index"
+echo "model: $model"
+echo "dataset: $dataset"
+pwd
+
+singularity exec \
+  -B "$HOME" \
+  -B "$group":/group_path \
+  --pwd "$lmms_eval_repo_dir" \
+  --env USER="$USER" \
+  --env HYDRA_FULL_ERROR=1 \
+  --env LOG_LEVEL=INFO \
+  "$sif_path" \
+  /bin/bash << EOT
+    # clone shared environment and create venv
+    git clone --branch v0.1.69 https://github.com/self-improving/shared-environment.git
+    source shared-environment/amd/create_venv_from_lockfile.sh $venv_name shared-environment/amd/locks/base_amd.txt
+    uv pip install loguru evaluate sqlitedict tenacity decord pytablewriter latex2sympy2
+    
+    # setup environment variables
+    export CUDA_VISIBLE_DEVICES="$ROCR_VISIBLE_DEVICES"
+    unset ROCR_VISIBLE_DEVICES
+
+    # run experiments
+    "examples/models/vllm_experiments.sh" "$model" "$dataset"
+EOT
+date
