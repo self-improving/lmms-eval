@@ -9,5 +9,4 @@ python3 -m lmms_eval \
     --batch_size 64 \
     --log_samples \
     --log_samples_suffix vllm \
-    --output_path /group_path/experiments/output/$USER/test/lmms-eval/logs/vllm_experiments \
-    --limit 64
+    --output_path /group_path/experiments/output/$USER/lmms-eval/logs/vllm_experiments

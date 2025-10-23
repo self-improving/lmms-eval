@@ -33,17 +33,11 @@ Make sure to set the following environment variables before running experiments:
 
 ## Usage
 
-The reproduction environment includes automated scripts to run experiments. All the setup procedures above are handled automatically by the `run.sh` script.
+The reproduction environment includes automated scripts to orchestrate the entire experiment workflow. The main `run.sh` script coordinates environment setup and experiment execution.
 
 ### Running Experiments
 
-To run experiments using SLURM job scheduler:
-
-```bash
-sbatch run.sh
-```
-
-To run experiments directly (without SLURM):
+To run the complete experiment pipeline:
 
 ```bash
 bash run.sh
@@ -51,17 +45,32 @@ bash run.sh
 
 ### What the script does
 
-The `run.sh` script automatically:
-1. Sets up the container environment
-2. Installs all required dependencies
-3. Configures environment variables
-4. Runs the specified models on the specified datasets
+The `run.sh` script orchestrates a two-stage process:
+
+1. **Environment Creation** (`create_env.sh`):
+   - Sets up the container environment
+   - Clones the shared-environment repository (if not exists)
+   - Creates virtual environment (if not exists)
+   - Installs all required dependencies
+
+2. **Experiment Execution** (`submit_experiments.sh`):
+   - Waits for environment creation to complete successfully
+   - Activates the virtual environment
+   - Configures environment variables
+   - Runs the specified models on the specified datasets
+
+### Job Dependencies
+
+The script uses SLURM job dependencies to ensure proper execution order:
+- Environment creation job runs first
+- Experiment jobs only start after environment setup completes successfully
+- If environment creation fails, experiments won't run (prevents wasted compute)
 
 ## How to Add Models and Datasets
 
 ### Adding Models
 
-To add new models that work with vLLM, edit the model definition section in `run.sh` (starting around line 28):
+To add new models that work with vLLM, edit the model definition section in `submit_experiments.sh` (starting around line 28):
 
 ```bash
 # models
@@ -77,12 +86,14 @@ models[6]=/group_path/models/Qwen/Qwen2.5-VL-72B-Instruct
 # models[7]=/path/to/your/new/model
 ```
 
+You need to change number of job array and indices.
+
 Supported model types:
 - vLLM-compatible models
 
 ### Adding Datasets
 
-To add new datasets, edit the dataset configuration section in `run.sh` (starting around line 39):
+To add new datasets, edit the dataset configuration section in `submit_experiments.sh` (starting around line 39):
 
 ```bash
 declare -A datasets
@@ -96,6 +107,8 @@ datasets[6]=muirbench
 # To add a new dataset, simply add another line:
 # datasets[7]=your_new_dataset_name
 ```
+
+You need to change number of job array and indices.
 
 Supported dataset types:
 - Vision-Language datasets (VQA, image captioning, etc.)
@@ -125,6 +138,8 @@ Before running full experiments, you can test with a small subset of data to ver
 # Example: --limit 10 (runs only 10 samples)
 python -m lmms_eval --model vllm --model_args model=your_model --tasks your_dataset --limit 10
 ```
+
+**Note**: The `vllm_experiments.sh` script is called from within `submit_experiments.sh`, so you can also modify the experiment parameters directly in that file.
 
 This is especially useful for:
 - Verifying model and dataset compatibility
