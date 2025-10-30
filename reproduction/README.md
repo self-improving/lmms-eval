@@ -30,6 +30,12 @@ uv pip install loguru evaluate sqlitedict tenacity decord pytablewriter latex2sy
 
 Make sure to set the following environment variables before running experiments:
 
+**Get your Hugging Face token**: Go to [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) and create a new token.
+
+**Set it inline when running commands**:
+```bash
+HF_TOKEN=your_huggingface_token_here bash run.sh
+```
 
 ## Usage
 

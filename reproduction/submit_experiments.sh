@@ -76,6 +76,7 @@ singularity exec \
   --env USER="$USER" \
   --env HYDRA_FULL_ERROR=1 \
   --env LOG_LEVEL=INFO \
+  --env HF_TOKEN="$HF_TOKEN" \
   "$sif_path" \
   /bin/bash << EOT
     source "$venv_name/bin/activate"
