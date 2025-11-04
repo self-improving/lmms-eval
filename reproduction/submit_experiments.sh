@@ -13,6 +13,13 @@
 
 set -euo pipefail
 
+# Check if HF_TOKEN is set
+if [[ -z "${HF_TOKEN:-}" ]]; then
+  echo "Error: HF_TOKEN environment variable is not set." >&2
+  echo "Please set it before running: export HF_TOKEN=your_huggingface_token_here" >&2
+  exit 1
+fi
+
 source /etc/profile.d/modules.sh
 module load singularity
 

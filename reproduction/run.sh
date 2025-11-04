@@ -9,7 +9,7 @@ echo "Environment creation job ID: $ENV_JOB_ID"
 
 # Submit the main job with dependency on the environment creation job
 echo "Submitting main experiments job (depends on job $ENV_JOB_ID)..."
-sbatch --dependency=afterok:$ENV_JOB_ID submit_experiments.sh
+sbatch --dependency=afterok:$ENV_JOB_ID --export=HF_TOKEN="${HF_TOKEN:-}" submit_experiments.sh
 
 echo "Jobs submitted successfully!"
 echo "Environment creation job ID: $ENV_JOB_ID"

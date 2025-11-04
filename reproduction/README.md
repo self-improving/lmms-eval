@@ -43,10 +43,29 @@ The reproduction environment includes automated scripts to orchestrate the entir
 
 ### Running Experiments
 
-To run the complete experiment pipeline:
+To run the complete experiment pipeline, you need to provide your Hugging Face token. The token is required to access Hugging Face model repositories and datasets.
 
+**Option 1: Set token inline (recommended for one-time runs)**
 ```bash
+HF_TOKEN=your_huggingface_token_here bash run.sh
+```
+
+**Option 2: Export token first (recommended for multiple runs)**
+```bash
+export HF_TOKEN=your_huggingface_token_here
 bash run.sh
+```
+
+**Note**: If `HF_TOKEN` is not set, the script will exit with an error message. Make sure you have created a token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) before running.
+
+The script will:
+1. Submit a SLURM job to create the environment (if not already created)
+2. Submit experiment jobs that depend on the environment creation job
+3. Run all model-dataset combinations as defined in `submit_experiments.sh`
+
+Check job status with:
+```bash
+squeue -u $USER
 ```
 
 ### What the script does
