@@ -4,10 +4,21 @@ This directory contains reproduction scripts and environment setup for running L
 
 ## Container Environment
 
-The reproduction environment is based on:
+The reproduction environment uses a Singularity container based on the ROCm vLLM image:
+
+**Base Image**: `rocm/vllm:rocm6.4.1_vllm_0.10.1_20250909`
+
+To build the Singularity image, use the definition file from the shared-environment repository:
+
+**Definition File**: [shared_env.def](https://github.com/self-improving/shared-environment/blob/cf66dfefe1471bbcd1723c3450d29c55e8932d1a/amd/shared_env.def)
+
+**Build Command**:
+```bash
+singularity build your_image.sif shared_env.def
 ```
-From: rocm/vllm:rocm6.4.1_vllm_0.10.1_20250909
-```
+
+**Note**: The pre-built image path used in the experiments is specified in `create_env.sh` and `submit_experiments.sh` (default: `/lustre/share/self_improving/self_improving/singularity/rocm_amd_image_vllm-taro.sif`). This default image is available on the **Ashitaka** cluster. If you're running on a different system or have built your own image, make sure to update the path in `create_env.sh` and `submit_experiments.sh`.
+
 ## Shared Environment
 
 This reproduction environment uses the shared environment from the AmalgamationAI project:
@@ -44,6 +55,11 @@ The reproduction environment includes automated scripts to orchestrate the entir
 ### Running Experiments
 
 To run the complete experiment pipeline, you need to provide your Hugging Face token. The token is required to access Hugging Face model repositories and datasets.
+
+**Prerequisites**: Navigate to the `reproduction` directory first:
+```bash
+cd reproduction
+```
 
 **Option 1: Set token inline (recommended for one-time runs)**
 ```bash
