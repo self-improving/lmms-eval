@@ -4,7 +4,7 @@ This directory contains reproduction scripts and environment setup for running L
 
 ## Version of lmms-eval
 
-This reproduction environment uses **lmms-eval v0.5**.
+This reproduction environment used **lmms-eval v0.5**, which is _not_ the version of main forked here.
 
 - **Release**: [v0.5](https://github.com/EvolvingLMMs-Lab/lmms-eval/releases/tag/v0.5)
 - **Code Repository**: [EvolvingLMMs-Lab/lmms-eval (v0.5 branch)](https://github.com/EvolvingLMMs-Lab/lmms-eval/tree/v0.5)
