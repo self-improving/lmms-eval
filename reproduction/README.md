@@ -2,6 +2,21 @@
 
 This directory contains reproduction scripts and environment setup for running LMMs-Eval experiments.
 
+## Version of lmms-eval
+
+This reproduction environment used **lmms-eval v0.5**, which is _not_ the version of main forked here.
+
+- **Release**: [v0.5](https://github.com/EvolvingLMMs-Lab/lmms-eval/releases/tag/v0.5)
+- **Code Repository**: [EvolvingLMMs-Lab/lmms-eval (v0.5 branch)](https://github.com/EvolvingLMMs-Lab/lmms-eval/tree/v0.5)
+
+To use this specific version, clone the repository and checkout the v0.5 tag:
+
+```bash
+git clone https://github.com/EvolvingLMMs-Lab/lmms-eval.git
+cd lmms-eval
+git checkout v0.5
+```
+
 ## Container Environment
 
 The reproduction environment uses a Singularity container based on the ROCm vLLM image:
